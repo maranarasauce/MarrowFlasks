@@ -1,0 +1,28 @@
+{
+  "name": "com.maranara.marrowflasks",
+  "version": "1.0.0",
+  "displayName": "Marrow Flasks",
+  "description": "Flasks is a new crate type for BONELAB's Warehouse that loads in any custom code that a pallet provides. The concepts of Flasks gains the benefits of the Warehouse system, granting the benefits of ease of use and modularity to the world of code modding. For example, it can be used for custom gamemodes, custom NPCs, and special behaviour for custom weapons, all done within the Marrow SDK.",
+  "unity": "2021.3",
+  "unityRelease": "16f1",
+ "keywords": [
+    "maranara",
+    "marrow",
+    "stresslevelzero",
+	"flasks",
+	"flask",
+	"cauldron",
+	"asset",
+	"warehouse",
+	"datacard",
+	"mara"
+  ],
+  "dependencies": {
+    "com.stresslevelzero.marrow.sdk": "0.6.0"
+  },
+  "author": {
+    "name": "Maranara",
+    "email": "maranara0sauce@gmail.com",
+    "url": "https://www.ethan-mara.com"
+  }
+}
