@@ -226,8 +226,8 @@ namespace Maranara.Marrow
             }
 
             List<string> additionalReferences = new List<string>();
-            additionalReferences.Add(Path.Combine(ML_DIR, "MelonLoader.dll"));
-            additionalReferences.Add(Path.Combine(ML_DIR, "0Harmony.dll"));
+            additionalReferences.Add(Path.Combine(ML_DIR, Path.Combine("net6","MelonLoader.dll")));
+            additionalReferences.Add(Path.Combine(ML_DIR, Path.Combine("net6", "0Harmony.dll")));
 
             foreach (string reference in Directory.GetFiles(ML_MANAGED_DIR))
             {
