@@ -91,7 +91,7 @@ public class Flask : DataCard
         asset.useDefaultIngredients = true;
         asset.Elixirs = Elixir.GetAllElixirsFromScene();
         asset.Title = $"Flask {flaskTitle}";
-        asset.Barcode = new Barcode("Flask.Googoo");
+        asset.Barcode = new Barcode($"Flask.{GUID.Generate()}");
         AssetDatabase.CreateAsset(asset, $"Assets/Flask {flaskTitle}.asset");
         AssetDatabase.SaveAssets();
 

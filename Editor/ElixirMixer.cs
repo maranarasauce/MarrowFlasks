@@ -44,6 +44,10 @@ namespace Maranara.Marrow
         }
         public static string ML_DIR = null;
         public static string ML_MANAGED_DIR = null;
+        public static string IL2CPP_ASSEMBLIES
+        {
+            get { return Path.Combine(Directory.GetParent(ML_MANAGED_DIR).FullName, "Il2CppAssemblies"); }
+        }
         public static void ExportFlasksFromPallet(Pallet pallet)
         {
             List<Flask> flasks = new List<Flask>();
@@ -241,14 +245,22 @@ namespace Maranara.Marrow
                     additionalReferences.Add(reference);
                 }
             }
+
+            foreach (string reference in Directory.GetFiles(IL2CPP_ASSEMBLIES))
+            {
+                if (!reference.EndsWith(".dll"))
+                    continue;
+                additionalReferences.Add(Path.Combine(IL2CPP_ASSEMBLIES, reference));
+            }
+
             return additionalReferences.ToArray();
         }
 
         private static string[] GetDefaultReferencesNoPath()
         {
             List<string> additionalReferences = new List<string>();
-            additionalReferences.Add("..\\MelonLoader.dll");
-            additionalReferences.Add("..\\0Harmony.dll");
+            additionalReferences.Add("..\\net6\\MelonLoader.dll");
+            additionalReferences.Add("..\\net6\\0Harmony.dll");
             foreach (string reference in Directory.GetFiles(ML_MANAGED_DIR))
             {
                 if (!reference.EndsWith(".dll"))
@@ -260,6 +272,15 @@ namespace Maranara.Marrow
                 {
                     additionalReferences.Add(fileName);
                 }
+            }
+
+            foreach (string reference in Directory.GetFiles(IL2CPP_ASSEMBLIES))
+            {
+                string fileName = Path.GetFileNameWithoutExtension(reference);
+
+                if (!reference.EndsWith(".dll"))
+                    continue;
+                additionalReferences.Add($"..\\Il2CppAssemblies\\{fileName}");
             }
             return additionalReferences.ToArray();
         }
