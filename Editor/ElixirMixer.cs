@@ -12,10 +12,6 @@ using System;
 using Microsoft.CodeAnalysis;
 using UnityEngine.Events;
 using Mono.Cecil;
-using Microsoft.Build.Unity;
-using PlasticGui.Diff.Annotate;
-using System.Linq;
-using System.Xml.Linq;
 
 namespace Maranara.Marrow
 {
@@ -214,79 +210,9 @@ namespace Maranara.Marrow
             WaitForCompile(asmBuilder);*/
         }
         
-        private static bool BuildDLL(string title, string[] elixirs, string outputPath)
+        private static void BuildDLL(string title, string[] elixirs, string outputPath)
         {
-            //Construct temporary directory
-            string tempDir = Path.Combine(Path.GetTempPath(), "flasktemp");
-            if (Directory.Exists(tempDir))
-                Directory.Delete(tempDir, true);
-            Directory.CreateDirectory(tempDir);
-            Application.OpenURL(tempDir);
 
-            //Get MSBuild template and copy to tempdir
-            string projTemplateDir = Path.GetFullPath("Packages/com.maranara.marrowflasks/Dependencies/MSBuildTemplate");
-
-            //Get CSProj and set the title and directories
-            string csProjPath = Path.Combine(projTemplateDir, "CustomMonoBehaviour.csprog");
-            string csProjText = File.ReadAllText(csProjPath).Replace("$safeprojectname$", title).Replace("$BONELAB_DIR$", ML_DIR);
-            
-            //Parse CSProj and setup compiler
-            XDocument csproj = XDocument.Parse(csProjText);
-            XElement compile = csproj.Root.Elements().Single((e) => e.ToString().Contains("Compile"));
-            compile.RemoveAll();
-            //Add references to Elixir paths
-            foreach (string elixirPath in elixirs)
-            {
-                string elixirName = Path.GetFileName(elixirPath);
-                string tempElixirPath = Path.Combine(tempDir, elixirName);
-
-                CreateTempElixir(tempElixirPath, File.ReadAllText(elixirPath));
-
-                XElement newCompile = new XElement("Compile");
-                newCompile.SetAttributeValue("Include", Path.GetFileName(tempElixirPath));
-                compile.Add(newCompile);
-            }
-
-            csproj.Root.ReplaceNodes(compile);
-            //Copy CSProj to temporary directory
-            string finalProjPath = Path.Combine(tempDir, "CustomMonoBehaviour.csproj");
-            string finalCsproj = csproj.ToString().Replace("xmlns=\"\" ", "");
-            File.WriteAllText(finalProjPath, finalCsproj);
-
-            //Build the dang project
-            MSBuildBuildProfile profile = MSBuildBuildProfile.Create("Debug", false, "-t:Build -p:Configuration=Debug");
-            List<MSBuildBuildProfile> profileList = new List<MSBuildBuildProfile>();
-            profileList.Add(profile);
-            IEnumerable<MSBuildBuildProfile> profiles = profileList;
-
-            MSBuildProjectReference project = MSBuildProjectReference.FromMSBuildProject(finalProjPath, profiles: profiles);
-
-            try
-            {
-                project.BuildProject(profile.Name);
-
-                //Create output directory
-                if (!Directory.Exists(outputPath))
-                    Directory.CreateDirectory(outputPath);
-
-                //Delete previous DLL
-                if (File.Exists(Path.Combine(outputPath, $"{title}.dll")))
-                    File.Delete(Path.Combine(outputPath, $"{title}.dll"));
-
-                //Copy from tempdir to output path
-                //File.Copy(Path.Combine(tempDir, "bin", "Debug", title + ".dll"), Path.Combine(outputPath, $"{title}.dll"));
-                //Directory.Delete(tempDir, true);
-
-                Application.OpenURL(outputPath);
-                return true;
-
-            }
-            catch (Exception e)
-            {
-                EditorUtility.DisplayDialog("ERROR", "Your compiled scripts had errors. Opening the output log...", "OK");
-                Debug.Log(e.StackTrace);
-                throw e;
-            }
         }
 
         /*private async static void WaitForCompile(AssemblyBuilder builder)
