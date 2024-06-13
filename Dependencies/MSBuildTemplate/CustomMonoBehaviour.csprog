@@ -13,7 +13,9 @@
         <NeutralLanguage>en-US</NeutralLanguage>
 		<AssemblyName>$safeprojectname$</AssemblyName>
     </PropertyGroup>
-	
+	<PropertyGroup>
+		<EnableDefaultItems>false</EnableDefaultItems>
+	</PropertyGroup>
 	<PropertyGroup>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -24,7 +26,7 @@
         <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
         <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
         <Authors>Maranara</Authors>
-        <PackageOutputPath>bin\Debug\</PackageOutputPath>
+        <PackageOutputPath></PackageOutputPath>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -34,7 +36,13 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <DefineConstants>TRACE;MELONLOADER</DefineConstants>
     </PropertyGroup>
-
+	
+	<ItemGroup>
+			<Reference Include="$title$">
+				<HintPath>$path$</HintPath>
+			</Reference>
+	</ItemGroup>
+	
     <ItemGroup>
       <EmbeddedResource Remove="Links\**" />
       <EmbeddedResource Remove="Staging\**" />

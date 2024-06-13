@@ -48,6 +48,11 @@ namespace Maranara.Marrow
         {
             get { return Path.Combine(Directory.GetParent(ML_MANAGED_DIR).FullName, "Il2CppAssemblies"); }
         }
+        public static string NET6_DIR
+        {
+            get { return Path.Combine(Directory.GetParent(ML_MANAGED_DIR).FullName, "net6"); }
+        }
+
         public static void ExportFlasksFromPallet(Pallet pallet)
         {
             List<Flask> flasks = new List<Flask>();
@@ -176,7 +181,17 @@ namespace Maranara.Marrow
 
             string[] scriptPaths = exportedScriptPaths.ToArray();
             string targetFlask = Path.Combine(outputDirectory, title + ".dll");
-            BuildDLL(title, scriptPaths, outputDirectory);
+
+            List<string> references = new List<string>();
+
+            if (flask.useDefaultIngredients)
+                references.AddRange(GetDefaultReferences(true));
+            else references.AddRange(AddPathToReferences(flask.ingredients));
+
+            if (flask.additionalIngredients != null)
+                references.AddRange(AddPathToReferences(flask.additionalIngredients));
+
+            BuildDLL(title, scriptPaths, references.ToArray(), outputDirectory);
             
             /*AssemblyBuilder asmBuilder = new AssemblyBuilder(Path.Combine(outputDirectory, title + ".dll"), exportedScriptPaths.ToArray());
 
@@ -196,15 +211,6 @@ namespace Maranara.Marrow
 
             asmBuilder.excludeReferences = asmBuilder.defaultReferences;
 
-            List<string> references = new List<string>();
-
-            if (flask.useDefaultIngredients)
-                references.AddRange(GetDefaultReferences(true));
-            else references.AddRange(AddPathToReferences(flask.ingredients));
-
-            if (flask.additionalIngredients != null)
-                references.AddRange(AddPathToReferences(flask.additionalIngredients));
-
             asmBuilder.additionalReferences = references.ToArray();
             asmBuilder.compilerOptions = new ScriptCompilerOptions()
             {
@@ -214,7 +220,7 @@ namespace Maranara.Marrow
             WaitForCompile(asmBuilder);*/
         }
         
-        private static bool BuildDLL(string title, string[] elixirs, string outputPath)
+        private static bool BuildDLL(string title, string[] elixirs, string[] references, string outputPath)
         {
             //Construct temporary directory
             string tempDir = Path.Combine(Path.GetTempPath(), "flasktemp");
@@ -232,7 +238,9 @@ namespace Maranara.Marrow
             
             //Parse CSProj and setup compiler
             XDocument csproj = XDocument.Parse(csProjText);
+            //Get template Compile
             XElement compile = csproj.Root.Elements().Single((e) => e.ToString().Contains("Compile"));
+            
             compile.RemoveAll();
             //Add references to Elixir paths
             foreach (string elixirPath in elixirs)
@@ -247,7 +255,22 @@ namespace Maranara.Marrow
                 compile.Add(newCompile);
             }
 
-            csproj.Root.ReplaceNodes(compile);
+            //Get template Reference
+            XElement reference = csproj.Root.Elements().Single((e) => e.ToString().Contains("Reference"));
+
+            reference.RemoveAll();
+            //Add references to Ingredients
+            foreach (string refHint in references)
+            {
+                XElement newRef = new XElement("Reference");
+                newRef.SetAttributeValue("Include", Path.GetFileNameWithoutExtension(refHint));
+                XElement newHint = new XElement("HintPath");
+                newHint.SetValue(Path.Combine(ML_MANAGED_DIR, refHint));
+                newRef.Add(newHint);
+
+                reference.Add(newRef);
+            }
+
             //Copy CSProj to temporary directory
             string finalProjPath = Path.Combine(tempDir, "CustomMonoBehaviour.csproj");
             string finalCsproj = csproj.ToString().Replace("xmlns=\"\" ", "");
@@ -274,8 +297,8 @@ namespace Maranara.Marrow
                     File.Delete(Path.Combine(outputPath, $"{title}.dll"));
 
                 //Copy from tempdir to output path
-                //File.Copy(Path.Combine(tempDir, "bin", "Debug", title + ".dll"), Path.Combine(outputPath, $"{title}.dll"));
-                //Directory.Delete(tempDir, true);
+                File.Copy(Path.Combine(tempDir, "bin", "Debug", "net6.0", title + ".dll"), Path.Combine(outputPath, $"{title}.dll"));
+                Directory.Delete(tempDir, true);
 
                 Application.OpenURL(outputPath);
                 return true;
@@ -310,9 +333,6 @@ namespace Maranara.Marrow
             }
 
             List<string> additionalReferences = new List<string>();
-            additionalReferences.Add(Path.Combine(ML_DIR, Path.Combine("net6","MelonLoader.dll")));
-            additionalReferences.Add(Path.Combine(ML_DIR, Path.Combine("net6", "0Harmony.dll")));
-
             foreach (string reference in Directory.GetFiles(ML_MANAGED_DIR))
             {
                 if (!reference.EndsWith(".dll"))
@@ -333,14 +353,19 @@ namespace Maranara.Marrow
                 additionalReferences.Add(Path.Combine(IL2CPP_ASSEMBLIES, reference));
             }
 
+            foreach (string reference in Directory.GetFiles(NET6_DIR))
+            {
+                if (!reference.EndsWith(".dll"))
+                    continue;
+                additionalReferences.Add(Path.Combine(NET6_DIR, reference));
+            }
+
             return additionalReferences.ToArray();
         }
 
         private static string[] GetDefaultReferencesNoPath()
         {
             List<string> additionalReferences = new List<string>();
-            additionalReferences.Add("..\\net6\\MelonLoader.dll");
-            additionalReferences.Add("..\\net6\\0Harmony.dll");
             foreach (string reference in Directory.GetFiles(ML_MANAGED_DIR))
             {
                 if (!reference.EndsWith(".dll"))
@@ -362,6 +387,16 @@ namespace Maranara.Marrow
                     continue;
                 additionalReferences.Add($"..\\Il2CppAssemblies\\{fileName}");
             }
+
+            foreach (string reference in Directory.GetFiles(NET6_DIR))
+            {
+                string fileName = Path.GetFileNameWithoutExtension(reference);
+
+                if (!reference.EndsWith(".dll"))
+                    continue;
+                additionalReferences.Add($"..\\net6\\{fileName}");
+            }
+
             return additionalReferences.ToArray();
         }
 
