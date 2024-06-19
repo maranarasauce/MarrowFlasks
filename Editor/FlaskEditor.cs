@@ -274,7 +274,7 @@ public class FlaskEditor : Editor
                 });
                 BuildEvent.AddListener(OnBuildComplete);
 
-                ElixirMixer.ExportElixirs("TasteTest", buildPath, flask, BuildEvent);
+                ElixirMixer.ExportElixirs("TasteTest", buildPath, flask, BuildEvent, true);
             }
             GUILayout.Space(5);
             if (GUILayout.Button("Pack Flask into Pallet"))

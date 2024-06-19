@@ -159,7 +159,7 @@ namespace Maranara.Marrow
             File.Move(path + ".temp", path);
         }
 
-        public static void ExportElixirs(string title, string outputDirectory, Flask flask, UnityEvent<bool> invokeAfterBuild)
+        public static void ExportElixirs(string title, string outputDirectory, Flask flask, UnityEvent<bool> invokeAfterBuild, bool openOutputDir = false)
         {
             if (!ConfirmMelonDirectory())
                 return;
@@ -191,7 +191,7 @@ namespace Maranara.Marrow
             if (flask.additionalIngredients != null)
                 references.AddRange(AddPathToReferences(flask.additionalIngredients));
 
-            BuildDLL(title, scriptPaths, references.ToArray(), outputDirectory);
+            BuildDLL(title, scriptPaths, references.ToArray(), outputDirectory, openOutputDir);
             
             /*AssemblyBuilder asmBuilder = new AssemblyBuilder(Path.Combine(outputDirectory, title + ".dll"), exportedScriptPaths.ToArray());
 
@@ -220,14 +220,13 @@ namespace Maranara.Marrow
             WaitForCompile(asmBuilder);*/
         }
         
-        private static bool BuildDLL(string title, string[] elixirs, string[] references, string outputPath)
+        private static bool BuildDLL(string title, string[] elixirs, string[] references, string outputPath, bool openOutputDir = false)
         {
             //Construct temporary directory
             string tempDir = Path.Combine(Path.GetTempPath(), "flasktemp");
             if (Directory.Exists(tempDir))
                 Directory.Delete(tempDir, true);
             Directory.CreateDirectory(tempDir);
-            Application.OpenURL(tempDir);
 
             //Get MSBuild template and copy to tempdir
             string projTemplateDir = Path.GetFullPath("Packages/com.maranara.marrowflasks/Dependencies/MSBuildTemplate");
@@ -300,7 +299,8 @@ namespace Maranara.Marrow
                 File.Copy(Path.Combine(tempDir, "bin", "Debug", "net6.0", title + ".dll"), Path.Combine(outputPath, $"{title}.dll"));
                 Directory.Delete(tempDir, true);
 
-                Application.OpenURL(outputPath);
+                if (openOutputDir)
+                    Application.OpenURL(outputPath);
                 return true;
 
             }
