@@ -19,7 +19,8 @@
   ],
   "dependencies": {
     "com.stresslevelzero.marrow.sdk": "0.6.0",
-	"com.unity.burst": "1.8.4"
+	"com.unity.burst": "1.8.4",
+	"com.microsoft.msbuildforunity": "0.9.2-20230322.1"
   },
   "author": {
     "name": "Maranara",
