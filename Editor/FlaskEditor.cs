@@ -9,8 +9,6 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
-using static Codice.CM.WorkspaceServer.WorkspaceTreeDataStore;
-using Object = UnityEngine.Object;
 
 [CustomEditor(typeof(Flask))]
 public class FlaskEditor : Editor
@@ -25,9 +23,13 @@ public class FlaskEditor : Editor
         ingredientsPlusProperty = serializedObject.FindProperty("additionalIngredients");
     }
 
+    // The currently selected Elixir in the inspector
     private MonoScript selectedElixir;
+    // List that compiles all Elixirs in a given OnInspectorGUI run, to be added to the elixir list
     private List<MonoScript> toAdd;
+    // Same as above but for removing an elixir
     private MonoScript toRemove;
+    // Foldout bools
     private bool notAnElixir, ingredientsInfoFoldout, ingredientsFoldout, elixirInfoFoldout;
     private bool elixirListFoldout = true;
     private bool debugFoldout = false;
@@ -54,16 +56,6 @@ public class FlaskEditor : Editor
             EditorGUILayout.LabelField("Elixir is null");
             return;
         }
-
-        /*if (GUILayout.Button("[Debug] Load Elixir Cache from Names"))
-        {
-            info.LoadCacheFromNames();
-        }
-        if (GUILayout.Button("[Debug] Set Elixir Cache from Names"))
-        {
-            info.SetCacheToNames();
-        }*/
-
 
         EditorGUILayout.BeginHorizontal();
         elixirListFoldout = EditorGUILayout.Foldout(elixirListFoldout, "Elixirs", true, style);

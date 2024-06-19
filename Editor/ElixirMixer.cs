@@ -13,7 +13,6 @@ using Microsoft.CodeAnalysis;
 using UnityEngine.Events;
 using Mono.Cecil;
 using Microsoft.Build.Unity;
-using PlasticGui.Diff.Annotate;
 using System.Linq;
 using System.Xml.Linq;
 

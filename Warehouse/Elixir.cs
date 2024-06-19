@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum)]
 public class Elixir : Attribute
 {
 #if UNITY_EDITOR
