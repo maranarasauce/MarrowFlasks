@@ -332,6 +332,9 @@ namespace Maranara.Marrow
             }
 
             List<string> additionalReferences = new List<string>();
+
+            additionalReferences.Add(Path.GetRelativePath(ML_MANAGED_DIR, Path.Combine(Directory.GetParent(ML_MANAGED_DIR).Parent.FullName, "Mods", "MarrowCauldron.dll")));
+
             foreach (string reference in Directory.GetFiles(ML_MANAGED_DIR))
             {
                 if (!reference.EndsWith(".dll"))
@@ -365,6 +368,9 @@ namespace Maranara.Marrow
         private static string[] GetDefaultReferencesNoPath()
         {
             List<string> additionalReferences = new List<string>();
+
+            additionalReferences.Add("..\\..\\Mods\\MarrowCauldron.dll");
+
             foreach (string reference in Directory.GetFiles(ML_MANAGED_DIR))
             {
                 if (!reference.EndsWith(".dll"))
@@ -461,6 +467,7 @@ namespace Maranara.Marrow
             finalScript = finalScript.Replace("this.StartCoroutine(", "MelonLoader.MelonCoroutines.Start(");
             finalScript = finalScript.Replace("base.StartCoroutine(", "MelonLoader.MelonCoroutines.Start(");
             finalScript = finalScript.Replace("StartCoroutine(", "MelonLoader.MelonCoroutines.Start(");
+            finalScript = finalScript.Replace("using SLZ.", "using Il2CppSLZ.");
 
             using (StreamWriter sw = File.CreateText(path))
             {

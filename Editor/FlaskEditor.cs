@@ -1,6 +1,4 @@
 using Maranara.Marrow;
-using SLZ.Marrow.Warehouse;
-using SLZ.MarrowEditor;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -105,12 +103,21 @@ public class FlaskEditor : Editor
             }
 
             EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Add Selected"))
+            {
+                toAdd.AddRange(Elixir.GetSelected());
+                selectedElixir = null;
+            }
 
             if (GUILayout.Button("Add All from Current Scene"))
             {
                 toAdd.AddRange(Elixir.GetAllElixirsFromScene());
                 selectedElixir = null;
             }
+
+            EditorGUILayout.EndHorizontal();
 
             style = EditorStyles.boldLabel;
             EditorGUILayout.Space(10);
