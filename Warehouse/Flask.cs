@@ -90,9 +90,10 @@ public class Flask : DataCard
         Flask asset = ScriptableObject.CreateInstance<Flask>();
         asset.useDefaultIngredients = true;
         asset.Elixirs = Elixir.GetAllElixirsFromScene();
-        asset.Title = $"Flask {flaskTitle}";
-        asset.Barcode = new Barcode($"Flask.{GUID.Generate()}");
-        AssetDatabase.CreateAsset(asset, $"Assets/Flask {flaskTitle}.asset");
+        string guid = GUID.Generate().ToString();
+        asset.Title = $"Flask {guid}";
+        asset.Barcode = new Barcode($"Flask.{guid}");
+        AssetDatabase.CreateAsset(asset, $"Assets/Flask {guid}.asset");
         AssetDatabase.SaveAssets();
 
         EditorUtility.FocusProjectWindow();

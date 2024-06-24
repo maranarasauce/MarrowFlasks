@@ -15,9 +15,7 @@ using Mono.Cecil;
 using Microsoft.Build.Unity;
 using System.Linq;
 using System.Xml.Linq;
-using SLZ.Serialize;
 using Newtonsoft.Json.Linq;
-using static PlasticPipe.PlasticProtocol.Messages.Serialization.ItemHandlerMessagesSerialization;
 
 namespace Maranara.Marrow
 {
@@ -45,6 +43,7 @@ namespace Maranara.Marrow
             //This is horrible... Oh well!
             if (st.ToString().Contains("PackPallet"))
             {
+                Debug.Log($"Export Flask. {flask.Title}");
                 checking = true;
                 curPallet = flask.Pallet;
                 ExportFlask(flask);
