@@ -16,6 +16,8 @@ using Microsoft.Build.Unity;
 using System.Linq;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
+using UnityEditor.ShaderKeywordFilter;
+using NUnit.Framework;
 
 namespace Maranara.Marrow
 {
@@ -57,6 +59,8 @@ namespace Maranara.Marrow
                 checking = false;
                 return;
             }
+            checking = false;
+            return;
             string dir = Path.GetFullPath(ElixirMixer.BuildPath(pallet));
             string[] files = Directory.GetFiles(dir);
 
@@ -124,10 +128,10 @@ namespace Maranara.Marrow
             IterateNextFlask(flaskPath, flasks.ToArray(), 0);
         }
 
+
         public static UnityEvent<bool> ExportFlask(Flask flask)
         {
-            string title = MarrowSDK.SanitizeName(flask.Title);
-            title = Regex.Replace(title, @"\s+", "");
+            string title = flask.GetCompiledName();
 
             string palletPath = Path.GetFullPath(ElixirMixer.BuildPath(flask.Pallet));
             string flaskPath = Path.Combine(palletPath, "flasks");
@@ -459,9 +463,59 @@ namespace Maranara.Marrow
             return additionalReferences.ToArray();
         }
 
-        private static string[] GetFlaskReferences(Flask[] flasks)
+        private static string[] GetFlaskReferences(string[] flasks)
         {
-            return new string[0];
+            List<string> refs = new List<string>();
+            foreach (string flaskRef in flasks)
+            {
+                if (!AssetWarehouse.Instance.TryGetDataCard<Flask>(flaskRef, out var flask))
+                {
+                    Debug.Log($"Could not find Flask with Barcode {flaskRef}");
+                    continue;
+                }
+                
+                if (AssetWarehouse.Instance.WorkingPallets.ContainsKey(flask.Pallet.Barcode))
+                {
+                    //Flask is owned by user and can be compiled (if not already)
+                    string palletPath = Path.GetFullPath(ElixirMixer.BuildPath(flask.Pallet));
+                    string flaskPath = Path.Combine(palletPath, "flasks", $"{flask.GetCompiledName()}.dll");
+
+                    if (File.Exists(flaskPath))
+                    {
+                        Debug.Log("Flask exists. No need to compile");
+
+                        refs.Add(flaskPath);
+                    } else
+                    {
+                        Debug.Log("Erm... Flask does not exist. Compiling...");
+                        UnityEvent<bool> complete = ElixirMixer.ExportFlask(flask);
+                        complete.AddListener((success) =>
+                        {
+                            if (success)
+                            {
+                                refs.Add(flaskPath);
+                            } else Debug.LogError($"Could not reference Flask {flask.Title} as it had errors compiling.");
+                        });
+                    }
+                } else
+                {
+                    Debug.Log("Not included in working pallets.");
+                    //Flask is referenced and needs to be found
+                    string ModDir = Path.Combine(ModBuilder.GamePaths[0], MarrowSDK.RUNTIME_MODS_DIRECTORY_NAME);
+                    string SelfModDir = Path.Combine(Application.persistentDataPath, MarrowSDK.RUNTIME_MODS_DIRECTORY_NAME);
+                    string palletPath = Path.Combine(flask.Pallet.Barcode, "flasks", $"{flask.GetCompiledName()}.dll");
+
+                    string selfPallet = Path.Combine(SelfModDir, palletPath);
+                    string modPallet = Path.Combine(ModDir, palletPath);
+                    if (File.Exists(selfPallet))
+                        refs.Add(selfPallet);
+                    else if (File.Exists(modPallet))
+                        refs.Add(modPallet);
+                    else
+                        Debug.LogError($"Could not reference Flask {flask.Title} as it does not exist in any Mod directory.");
+                }
+            }
+            return refs.ToArray();
         }
 
         private static string[] AddPathToReferences(string[] references, string relPath)

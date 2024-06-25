@@ -1,6 +1,7 @@
 using Maranara.Marrow;
 using Microsoft.CodeAnalysis.Scripting;
 using SLZ.Marrow;
+using SLZ.Marrow.Warehouse;
 using SLZ.Marrow.Zones;
 using SLZ.MarrowEditor;
 using System;
@@ -44,251 +45,23 @@ public class FlaskEditor : Editor
     private SerializedProperty palletIngredientsProperty;
     public override void OnInspectorGUI()
     {
-        
-        serializedObject.Update();
-
-        GUIStyle style = EditorStyles.foldout;
-        style.fontStyle = FontStyle.Bold;
-
-        #region ElixirSelector
-
-        if (info == null)
-        {
-            EditorGUILayout.LabelField("Info is null");
-            return;
-        }
-        if (info.Elixirs == null)
-        {
-            EditorGUILayout.LabelField("Elixir is null");
-            return;
-        }
-
-        EditorGUILayout.BeginHorizontal();
-        elixirListFoldout = EditorGUILayout.Foldout(elixirListFoldout, "Elixirs", true, style);
-
-        if (GUILayout.Button("?"))
-            elixirInfoFoldout = !elixirInfoFoldout;
-        EditorGUILayout.EndHorizontal();
-
-        if (elixirInfoFoldout)
-        {
-            EditorStyles.label.wordWrap = true;
-            EditorGUILayout.LabelField("Elixirs are Mono Scripts that will be compiled into your Flask. This means MonoBehaviours and ScriptableObjects are supported, with nested types such as structs being \"supported.\" Supported in the fact that they will compile as a part of their parent Elixir, but will not show up in any Elixir list.");
-        }
-        EditorGUILayout.Space(5);
-
-        toRemove = null;
-
-        if (elixirListFoldout)
-        {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField($"Add an Elixir");
-
-            MonoScript newElixir = (MonoScript)EditorGUILayout.ObjectField(selectedElixir, typeof(MonoScript), true);
-            if (selectedElixir != newElixir)
-            {
-                selectedElixir = newElixir;
-                if (selectedElixir != null)
-                {
-                    Type elixirType = selectedElixir.GetClass();
-
-                    Elixir attribute = (Elixir)elixirType.GetCustomAttribute(typeof(Elixir));
-                    if (attribute == null)
-                        notAnElixir = true;
-                    else
-                        notAnElixir = false;
-                }
-                else
-                    notAnElixir = false;
-            }
-
-            if (notAnElixir)
-                EditorGUILayout.LabelField("THIS IS NOT AN ELIXIR!");
-            else if (selectedElixir != null && GUILayout.Button("Add"))
-            {
-                toAdd.Add(selectedElixir);
-                selectedElixir = null;
-            }
-
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.BeginHorizontal();
-
-            if (GUILayout.Button("Add Selected"))
-            {
-                toAdd.AddRange(Elixir.GetSelected());
-                selectedElixir = null;
-            }
-
-            if (GUILayout.Button("Add All from Current Scene"))
-            {
-                toAdd.AddRange(Elixir.GetAllElixirsFromScene());
-                selectedElixir = null;
-            }
-
-            EditorGUILayout.EndHorizontal();
-
-            style = EditorStyles.boldLabel;
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField($"Elixir List ({info.Elixirs.Length})", style);
-
-            for (int i = 0; i < info.Elixirs.Length; i++)
-            {
-                MonoScript type = info.Elixirs[i];
-                if (type == null)
-                    continue;
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(AssetDatabase.GUIDToAssetPath(info.elixirGUIDs[i]));
-                if (GUILayout.Button("X"))
-                {
-                    toRemove = type;
-                    break;
-                }
-                EditorGUILayout.EndHorizontal();
-            }
-        }
-
-        if (toRemove != null || toAdd.Count != 0)
-        {
-            List<MonoScript> types = new List<MonoScript>();
-            types.AddRange(info.Elixirs);
-            if (toRemove != null)
-                types.Remove(toRemove);
-
-            if (toAdd.Count != 0)
-            {
-                foreach (MonoScript type in toAdd)
-                {
-                    if (!types.Contains(type))
-                        types.Add(type);
-                }
-                toAdd.Clear();
-            }
-
-            info.Elixirs = types.ToArray();
-
-            EditorUtility.SetDirty(info);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-        }
-        #endregion
-
-        GUILayout.Space(20);
-
-        #region ReferenceSelector
-        style = EditorStyles.foldout;
-        style.fontStyle = FontStyle.Bold;
-
-        EditorGUILayout.BeginHorizontal();
-        ingredientsFoldout = EditorGUILayout.Foldout(ingredientsFoldout, "Ingredients", true, style);
-
-        if (GUILayout.Button("?"))
-            ingredientsInfoFoldout = !ingredientsInfoFoldout;
-        EditorGUILayout.EndHorizontal();
-
-        if (ingredientsInfoFoldout)
-        {
-            EditorStyles.label.wordWrap = true;
-            EditorGUILayout.LabelField("Ingredients are references to other assemblies that your Flask will use. It is recommended you keep these set to default, as the compiler will omit any references to Ingredients not used in the Flask. The Ingredients are relative to the MelonLoader/Managed folder, so if you want to reference something such as another Flask, you'll need to enter the path relative to the MelonLoader/Managed folder. While you can enter the full path, it is recommended you keep the path relative in the event that either your MelonLoader directory moves, or you're working with other people who have their directory in a different location.");
-        }
-        GUILayout.Space(10);
-
-        if (ingredientsFoldout)
-        {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Use Default Ingredients");
-            bool defaultIngredients = EditorGUILayout.Toggle(info.useDefaultIngredients);
-            EditorGUILayout.EndHorizontal();
-
-            if (defaultIngredients != info.useDefaultIngredients)
-            {
-                info.useDefaultIngredients = defaultIngredients;
-                if (defaultIngredients)
-                {
-                    if (info.ingredients == null)
-                    {
-                        info.ingredients = ElixirMixer.GetDefaultReferences(false);
-                        EditorUtility.SetDirty(info);
-                    }
-                }
-            }
-            if (!defaultIngredients)
-            {
-                GUIContent content = new GUIContent()
-                {
-                    text = "Base Ingredients"
-                };
-                EditorGUILayout.PropertyField(ingredientsProperty, content);
-
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("Set Base Ingredients to Default"))
-                {
-                    info.ingredients = ElixirMixer.GetDefaultReferences(false);
-                    EditorUtility.SetDirty(info);
-                }
-                if (GUILayout.Button("Clear Base Ingredients"))
-                {
-                    info.ingredients = new string[0];
-                    EditorUtility.SetDirty(info);
-                }
-                if (GUILayout.Button("Select Base Ingredient"))
-                {
-                    SelectIngredient(ref info.ingredients);
-                    EditorUtility.SetDirty(info);
-                }
-                EditorGUILayout.EndHorizontal();
-
-
-            }
-            if (defaultIngredients)
-            {
-                GUILayout.Space(10);
-                //EditorGUILayout.PropertyField(ingredientsPlusProperty);
-                if (GUILayout.Button("Select Additional Ingredient"))
-                {
-                   // SelectIngredient(ref info.additionalIngredients);
-                    EditorUtility.SetDirty(info);
-                }
-            }
-        }
-
-        #endregion
-
-        GUILayout.Space(20);
-
-        #region Debugger
-        style = EditorStyles.foldout;
-        style.fontStyle = FontStyle.Bold;
-
-        EditorGUILayout.BeginHorizontal();
-        debugFoldout = EditorGUILayout.Foldout(debugFoldout, "Debugging", true, style);
-        GUILayout.EndHorizontal();
-
-        GUILayout.Space(10);
-
-        if (debugFoldout)
-        {
-            if (GUILayout.Button("Taste Test Flask"))
-            {
-                
-            }
-            GUILayout.Space(5);
-            if (GUILayout.Button("Pack Flask into Pallet"))
-            {
-               
-
-            }
-        }
-        GUILayout.Space(10);
-
-        #endregion
-
-        serializedObject.ApplyModifiedProperties();
+        EditorGUILayout.LabelField("This is an external Flask. You cannot edit its contents.");
+        EditorGUILayout.TextField(info.Barcode);
     }
 
     DragAndDropManipulatorListHelper dragDropManip;
     public override VisualElement CreateInspectorGUI()
     {
         serializedObject.Update();
+
+        if (AssetWarehouse.Instance != null && info != null && info.Pallet != null)
+        {
+            if (!AssetWarehouse.Instance.WorkingPallets.ContainsKey(info.Pallet.Barcode))
+            {
+                return null;
+            }
+        }
+        
 
         string VISUALTREE_PATH = AssetDatabase.GUIDToAssetPath("b4f4c7462f8ee1a45a17b4fdf075b98d");
         VisualTreeAsset visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(VISUALTREE_PATH);
@@ -328,6 +101,8 @@ public class FlaskEditor : Editor
                 if (droppedGO != null)
                 {
                     Type elixirType = droppedGO.GetClass();
+                    if (elixirType == null)
+                        continue;
 
                     Elixir attribute = (Elixir)elixirType.GetCustomAttribute(typeof(Elixir));
                     if (attribute != null)
@@ -398,6 +173,35 @@ public class FlaskEditor : Editor
             if (!ElixirMixer.ConfirmMelonDirectory())
                 return;
             SelectIngredient(ref info.gameIngredients, ElixirMixer.ML_DIR);
+            EditorUtility.SetDirty(info);
+            serializedObject.ApplyModifiedProperties();
+            serializedObject.Update();
+        };
+
+        //Add flask ingredients
+        Button flaskIngredientSelect = tree.Q<Button>("PalletSelect");
+        ObjectField flaskIngredientField = tree.Q<ObjectField>("FlaskIngredientField");
+        flaskIngredientField.RegisterValueChangedCallback(
+            evt =>
+            {
+                StyleEnum<DisplayStyle> displayHidden = flaskIngredientSelect.style.display;
+                displayHidden = evt.newValue == null ? DisplayStyle.None : DisplayStyle.Flex;
+                flaskIngredientSelect.style.display = displayHidden;
+
+                if (evt.newValue == info)
+                    flaskIngredientField.value = null;
+            }
+        );
+
+        flaskIngredientSelect.clicked += () =>
+        {
+            List<string> a = info.palletIngredients.ToList();
+            Flask flask = (Flask)flaskIngredientField.value;
+            a.Add(flask.Barcode);
+            info.palletIngredients = a.ToArray();
+
+            flaskIngredientField.value = null;
+
             EditorUtility.SetDirty(info);
             serializedObject.ApplyModifiedProperties();
             serializedObject.Update();

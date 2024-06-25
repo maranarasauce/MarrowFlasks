@@ -1,8 +1,10 @@
 using Newtonsoft.Json.Linq;
+using SLZ.Marrow;
 using SLZ.Marrow.Warehouse;
 using SLZ.Serialize;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -13,7 +15,7 @@ public class Flask : DataCard
     public bool useDefaultIngredients = true;
     public string[] ingredients;
     public string[] gameIngredients;
-    public Flask[] palletIngredients;
+    public string[] palletIngredients;
 
 #if UNITY_EDITOR
     public delegate void PackDelegate(Flask flask);
@@ -52,6 +54,13 @@ public class Flask : DataCard
         }
     }
 
+    public string GetCompiledName()
+    {
+        string title = MarrowSDK.SanitizeName(Title);
+        title = Regex.Replace(title, @"\s+", "");
+        return title;
+    }
+
     public MonoScript[] LoadCacheFromNames()
     {
         List<MonoScript> types = new List<MonoScript>();
@@ -83,6 +92,8 @@ public class Flask : DataCard
         OnPacked?.Invoke(this);
         base.Pack(store, json);
     }
+
+    
 
     [MenuItem("Stress Level Zero/Alchemy/Create Flask Based on Open Scenes")]
     public static void CreateFlaskInfo()
