@@ -2,12 +2,14 @@ using Maranara.Marrow;
 using Microsoft.CodeAnalysis.Scripting;
 using SLZ.Marrow;
 using SLZ.Marrow.Zones;
+using SLZ.MarrowEditor;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
@@ -22,7 +24,8 @@ public class FlaskEditor : Editor
         info = target as Flask;
         toAdd = new List<MonoScript>();
         ingredientsProperty = serializedObject.FindProperty("ingredients");
-        ingredientsPlusProperty = serializedObject.FindProperty("additionalIngredients");
+        gameIngredientsProperty = serializedObject.FindProperty("gameIngredients");
+        palletIngredientsProperty = serializedObject.FindProperty("palletIngredients");
     }
 
     // The currently selected Elixir in the inspector
@@ -37,7 +40,8 @@ public class FlaskEditor : Editor
     private bool debugFoldout = false;
 
     private SerializedProperty ingredientsProperty;
-    private SerializedProperty ingredientsPlusProperty;
+    private SerializedProperty gameIngredientsProperty;
+    private SerializedProperty palletIngredientsProperty;
     public override void OnInspectorGUI()
     {
         
@@ -238,10 +242,10 @@ public class FlaskEditor : Editor
             if (defaultIngredients)
             {
                 GUILayout.Space(10);
-                EditorGUILayout.PropertyField(ingredientsPlusProperty);
+                //EditorGUILayout.PropertyField(ingredientsPlusProperty);
                 if (GUILayout.Button("Select Additional Ingredient"))
                 {
-                    SelectIngredient(ref info.additionalIngredients);
+                   // SelectIngredient(ref info.additionalIngredients);
                     EditorUtility.SetDirty(info);
                 }
             }
@@ -265,33 +269,12 @@ public class FlaskEditor : Editor
         {
             if (GUILayout.Button("Taste Test Flask"))
             {
-                Flask flask = (Flask)target;
-
-                string title = "TasteTest";
-                string buildPath = Application.temporaryCachePath;
-
-                UnityEvent<bool> BuildEvent = new UnityEvent<bool>();
-                BuildEvent.AddListener((hasErrors) =>
-                {
-                    ElixirMixer.TreatExportedElixir(Path.Combine(buildPath, title + ".dll"));
-                });
-                BuildEvent.AddListener(OnBuildComplete);
-
-                ElixirMixer.ExportElixirs("TasteTest", buildPath, flask, BuildEvent, true);
+                
             }
             GUILayout.Space(5);
             if (GUILayout.Button("Pack Flask into Pallet"))
             {
-                Flask flask = (Flask)target;
-
-                string palletPath = Path.GetFullPath(ElixirMixer.BuildPath(flask.Pallet));
-                string flaskPath = Path.Combine(palletPath, "flasks");
-
-                UnityEvent<bool> BuildEvent = ElixirMixer.ExportFlask(flask);
-                BuildEvent.AddListener((hasErrors) =>
-                {
-                    EditorUtility.RevealInFinder(flaskPath);
-                });
+               
 
             }
         }
@@ -305,6 +288,7 @@ public class FlaskEditor : Editor
     DragAndDropManipulatorListHelper dragDropManip;
     public override VisualElement CreateInspectorGUI()
     {
+        serializedObject.Update();
 
         string VISUALTREE_PATH = AssetDatabase.GUIDToAssetPath("b4f4c7462f8ee1a45a17b4fdf075b98d");
         VisualTreeAsset visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(VISUALTREE_PATH);
@@ -370,7 +354,60 @@ public class FlaskEditor : Editor
             DropAreaDefaults(zoneLinkDragDropTarget, zoneLinkDragDropHint, preDragHintText);
             zoneLinkDragDropTarget.RemoveFromClassList("drop-area--dropping");
         };
+
+        //Serialized Lists
+
+        tree.Q<VisualElement>("BaseIngredients").Add(new PropertyField(ingredientsProperty));
+        tree.Q<VisualElement>("GameIngredients").Add(new PropertyField(gameIngredientsProperty));
+        tree.Q<VisualElement>("PalletIngredients").Add(new PropertyField(palletIngredientsProperty));
+
+        //Add ingredients
+        tree.Q<Button>("GameSelect").clicked += () =>
+        {
+            SelectIngredient(ref info.gameIngredients, ElixirMixer.ML_DIR);
+            EditorUtility.SetDirty(info);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            serializedObject.ApplyModifiedProperties();
+            serializedObject.Update();
+        };
+
+        //Debug buttons
+        tree.Q<Button>("TestFlask").clicked += TestFlask;
+        tree.Q<Button>("PackFlask").clicked += PackFlask;
+
         return tree;
+    }
+
+    private void TestFlask()
+    {
+        Flask flask = (Flask)target;
+
+        string title = "TasteTest";
+        string buildPath = Application.temporaryCachePath;
+
+        UnityEvent<bool> BuildEvent = new UnityEvent<bool>();
+        BuildEvent.AddListener((hasErrors) =>
+        {
+            ElixirMixer.TreatExportedElixir(Path.Combine(buildPath, title + ".dll"));
+        });
+        BuildEvent.AddListener(OnBuildComplete);
+
+        ElixirMixer.ExportElixirs("TasteTest", buildPath, flask, BuildEvent, true);
+    }
+
+    private void PackFlask()
+    {
+        Flask flask = (Flask)target;
+
+        string palletPath = Path.GetFullPath(ElixirMixer.BuildPath(flask.Pallet));
+        string flaskPath = Path.Combine(palletPath, "flasks");
+
+        UnityEvent<bool> BuildEvent = ElixirMixer.ExportFlask(flask);
+        BuildEvent.AddListener((hasErrors) =>
+        {
+            EditorUtility.RevealInFinder(flaskPath);
+        });
     }
 
     private void AddElixirsFromScene()
@@ -492,9 +529,9 @@ public class FlaskEditor : Editor
         zoneLinkDragDropHint.style.display = DisplayStyle.Flex;
     }
 
-    private static void SelectIngredient(ref string[] arr)
+    private static void SelectIngredient(ref string[] arr, string relativeToPath = "")
     {
-        string path = GetIngredient();
+        string path = GetIngredient(relativeToPath);
         if (!string.IsNullOrEmpty(path))
         {
             List<string> gredients = new List<string>();
@@ -505,24 +542,16 @@ public class FlaskEditor : Editor
         }
     }
 
-    private static string GetIngredient()
+    private static string GetIngredient(string relativeToPath)
     {
         if (!ElixirMixer.ConfirmMelonDirectory())
             return string.Empty;
 
-        string GotPath = EditorUtility.OpenFilePanel("Select an Ingredient", ElixirMixer.ML_DIR, "dll");
+        string GotPath = EditorUtility.OpenFilePanel("Select an Ingredient", relativeToPath, "dll");
         if (string.IsNullOrEmpty(GotPath))
             return string.Empty;
 
-        //Check if this is a Flask reference and return accordingly
-        DirectoryInfo parent = Directory.GetParent(GotPath);
-        if (parent.Name == "flasks")
-        {
-            string crateName = parent.Parent.Name;
-            string flaskName = Path.GetFileName(GotPath);
-            return $"Pallet-{crateName}-{flaskName}";
-        }
-        return Path.GetRelativePath(ElixirMixer.ML_MANAGED_DIR, GotPath);
+        return Path.GetRelativePath(relativeToPath, GotPath);
     }
 
     private static void OnBuildComplete(bool hasErrors)

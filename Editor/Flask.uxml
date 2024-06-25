@@ -1,0 +1,46 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Template name="ElixirItem" src="project://database/Assets/ElixirItem.uxml?fileID=9197481963319205126&amp;guid=fc0a6e9674adeac49a0a82ffae009a25&amp;type=3#ElixirItem" />
+    <ui:Foldout text="Usage Info" name="UsageInfo" value="false" style="left: 18px; right: auto; padding-right: 18px; margin-bottom: 0; display: none;">
+        <ui:Label text="Elixirs are Mono Scripts that will be compiled into your Flask. This means MonoBehaviours and ScriptableObjects are supported, with nested types such as structs being &quot;supported.&quot; Supported in the fact that they will compile as a part of their parent Elixir, but will not show up in any Elixir list." display-tooltip-when-elided="true" style="flex-wrap: wrap; white-space: normal;" />
+    </ui:Foldout>
+    <ui:Foldout text="Elixirs" name="ElixirFoldout" style="-unity-font-style: bold;">
+        <ui:ScrollView style="position: relative; height: auto; width: 395px; left: -5px; max-height: 90px;">
+            <ui:Instance template="ElixirItem" name="ElixirItem" style="display: none; -unity-font-style: normal;" />
+        </ui:ScrollView>
+        <ui:VisualElement name="zoneLinkDragDropTarget" class="drop-area" style="margin-top: 2px; margin-bottom: 15px; padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; top: 0; border-left-color: rgb(128, 128, 128); border-right-color: rgb(128, 128, 128); border-top-color: rgb(128, 128, 128); border-bottom-color: rgb(128, 128, 128); border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; margin-left: 18px; width: 282px; display: flex; left: 0;">
+            <ui:Label text="Drop Elixirs Here to Add" display-tooltip-when-elided="true" name="preDragHintText" tooltip="Drop Elixirs Here to Add" style="position: absolute; font-size: 10px; -unity-font-style: italic; color: rgb(144, 144, 144);" />
+            <ui:Label text="Drop Elixirs here to Add" display-tooltip-when-elided="true" name="zoneLinkDragDropHint" style="-unity-font-style: italic;" />
+            <ui:Label text="Drag Elixirs here to add" display-tooltip-when-elided="true" name="zoneLinkDragDropLabel" class="drop-area__label" style="visibility: hidden; display: none;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="UtilityTab" style="left: 18px; flex-direction: row; align-items: stretch; justify-content: flex-start; right: auto; width: auto; margin-right: 0; padding-right: 18px;">
+            <ui:Button text="Add Selected" display-tooltip-when-elided="true" name="AddFromSelected" style="-unity-font-style: normal;" />
+            <ui:Button text="Add All from Open Scenes" display-tooltip-when-elided="true" name="AddFromScene" style="-unity-font-style: normal;" />
+        </ui:VisualElement>
+    </ui:Foldout>
+    <ui:Foldout text="Ingredients" name="IngredientsFoldout" style="-unity-font-style: bold; margin-top: 10px; margin-bottom: 10px;">
+        <ui:Toggle label="Default Base Ingredients" value="true" name="BaseIngredientToggle" style="-unity-font-style: normal; left: auto; margin-left: 18px; margin-bottom: 0;" />
+        <ui:VisualElement name="BaseIngredientGrp" style="left: 0; padding-right: 0; margin-right: 0; bottom: 0; margin-bottom: 15px; margin-top: 5px; display: none; margin-left: 36px;">
+            <ui:Label text="&lt;color=red&gt;Please only tamper with Base Ingredients if you know what you&apos;re doing.&lt;/color&gt; These ingredients are essential to functionality and changing this list may shatter your Flask." display-tooltip-when-elided="true" name="BaseWarning" style="margin-top: 0; margin-right: 36px; -unity-font-style: normal; white-space: normal;" />
+            <ui:IMGUIContainer name="BaseIngredients" />
+            <ui:VisualElement name="BaseIngredientBtns" style="left: auto; padding-right: 0; margin-right: 18px; flex-direction: row; flex-wrap: nowrap; margin-left: 0;">
+                <ui:Button text="Set Base to Defaults" display-tooltip-when-elided="true" name="BaseDefaults" style="margin-left: 0; -unity-font-style: normal;" />
+                <ui:Button text="Clear Base" display-tooltip-when-elided="true" name="BaseClear" style="-unity-font-style: normal;" />
+                <ui:Button text="Select Base" display-tooltip-when-elided="true" name="BaseSelect" style="-unity-font-style: normal;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="GameIngredients" style="margin-left: 18px; margin-top: 5px; -unity-font-style: normal;" />
+        <ui:VisualElement name="PalletIngredients" style="margin-left: 18px; margin-top: 0; display: none; -unity-font-style: normal;" />
+        <ui:VisualElement name="IngredientBtns" style="left: auto; padding-right: 0; margin-right: 0; flex-direction: row; flex-wrap: nowrap; margin-left: 18px; margin-top: 3px;">
+            <ui:Button text="Select Game Ingredient" display-tooltip-when-elided="true" name="GameSelect" style="margin-left: 0; -unity-font-style: normal;" />
+        </ui:VisualElement>
+    </ui:Foldout>
+    <ui:Foldout text="Debugging" name="DebugFoldout" value="true" style="-unity-font-style: bold; flex-direction: column;">
+        <ui:VisualElement name="DebugBtns" style="flex-direction: row;">
+            <ui:Button text="Taste Test Flask" display-tooltip-when-elided="true" name="TestFlask" style="margin-left: 18px; -unity-font-style: normal;" />
+            <ui:Button text="Pack Flask into Pallet" display-tooltip-when-elided="true" name="PackFlask" style="margin-left: 3px; -unity-font-style: normal;" />
+        </ui:VisualElement>
+    </ui:Foldout>
+    <ui:VisualElement name="validationFeedback" style="visibility: visible; display: flex; margin-top: 5px;">
+        <ui:IMGUIContainer name="imguiValidationContainer" />
+    </ui:VisualElement>
+</ui:UXML>

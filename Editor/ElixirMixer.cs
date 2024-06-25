@@ -238,8 +238,8 @@ namespace Maranara.Marrow
                 references.AddRange(GetDefaultReferences(true));
             else references.AddRange(AddPathToReferences(flask.ingredients));
 
-            if (flask.additionalIngredients != null)
-                references.AddRange(AddPathToReferences(flask.additionalIngredients));
+            /*if (flask.additionalIngredients != null)
+                references.AddRange(AddPathToReferences(flask.additionalIngredients));*/
 
             BuildDLL(title, scriptPaths, references.ToArray(), outputDirectory, openOutputDir);
             

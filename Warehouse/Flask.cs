@@ -12,7 +12,8 @@ public class Flask : DataCard
     public string[] elixirGUIDs;
     public bool useDefaultIngredients = true;
     public string[] ingredients;
-    public string[] additionalIngredients;
+    public string[] gameIngredients;
+    public Flask[] palletIngredients;
 
 #if UNITY_EDITOR
     public delegate void PackDelegate(Flask flask);

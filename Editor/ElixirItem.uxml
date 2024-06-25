@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="ElixirItem" style="flex-direction: row; display: flex;">
+        <ui:VisualElement name="LinkTop" style="width: 20px; background-image: url(&apos;project://database/Assets/ElixirListTop.png?fileID=2800000&amp;guid=d33201735164e18479ded6d6b12faa2b&amp;type=3#ElixirListTop&apos;); margin-top: 2px; -unity-background-image-tint-color: rgb(210, 210, 210); display: none;" />
+        <ui:VisualElement name="LinkMid" style="width: 20px; background-image: url(&apos;project://database/Assets/ElixirListTop.png?fileID=2800000&amp;guid=d33201735164e18479ded6d6b12faa2b&amp;type=3#ElixirListTop&apos;); margin-top: 2px; -unity-background-image-tint-color: rgb(210, 210, 210); display: none;" />
+        <ui:VisualElement name="LinkBtm" style="width: 20px; background-image: url(&apos;project://database/Assets/ElixirListBtm.png?fileID=2800000&amp;guid=a2a636da1e2cd9c40a49889ff629dad9&amp;type=3#ElixirListBtm&apos;); margin-top: 2px; -unity-background-image-tint-color: rgb(210, 210, 210); display: none;" />
+        <ui:Label text="Assets/Example/Elixir.cs" display-tooltip-when-elided="true" name="Path" style="width: auto; align-items: flex-start; flex-direction: column; padding-right: 5px; padding-left: 5px; padding-top: 2px; padding-bottom: 2px; -unity-font-style: normal;" />
+        <ui:VisualElement name="AssetIcon" style="width: 15px; background-image: url(&apos;project://database/Packages/com.unity.render-pipelines.core/Editor/LookDev/Icons/Add.png?fileID=2800000&amp;guid=cbaeed03e5416aa4bae23110b63a0c7d&amp;type=3#Add&apos;); margin-top: 2px; -unity-background-image-tint-color: rgb(210, 210, 210); display: flex; height: 15px; align-items: center; justify-content: space-between; padding-top: 0; margin-bottom: 2px; margin-right: 15px;" />
+        <ui:Button text="-" display-tooltip-when-elided="true" name="Remove" style="align-items: auto; justify-content: flex-start; width: 30px; -unity-text-align: middle-center; flex-direction: column;" />
+    </ui:VisualElement>
+</ui:UXML>
