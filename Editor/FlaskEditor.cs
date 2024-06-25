@@ -355,6 +355,37 @@ public class FlaskEditor : Editor
             zoneLinkDragDropTarget.RemoveFromClassList("drop-area--dropping");
         };
 
+        //Base ingredient toggle
+        VisualElement baseIngredientGrp = tree.Q<VisualElement>("BaseIngredientGrp");
+        if (!info.useDefaultIngredients)
+        {
+            StyleEnum<DisplayStyle> displayHidden = baseIngredientGrp.style.display;
+            displayHidden = DisplayStyle.Flex;
+            baseIngredientGrp.style.display = displayHidden;
+        }
+
+        Toggle baseIngredientToggle = tree.Q<Toggle>("BaseIngredientToggle");
+        baseIngredientToggle.value = info.useDefaultIngredients;
+        tree.Q<Toggle>("BaseIngredientToggle").RegisterValueChangedCallback<bool>((e) => {
+            info.useDefaultIngredients = e.newValue;
+
+            StyleEnum<DisplayStyle> displayHidden = baseIngredientGrp.style.display;
+            displayHidden = info.useDefaultIngredients ? DisplayStyle.None : DisplayStyle.Flex;
+            baseIngredientGrp.style.display = displayHidden;
+
+            if (info.ingredients == null || info.ingredients.Length == 0)
+            {
+                BaseToDefault();
+            }
+
+            EditorUtility.SetDirty(info);
+        });
+
+        //Base ingredient buttons
+        tree.Q<Button>("BaseDefaults").clicked += BaseToDefault;
+        tree.Q<Button>("BaseClear").clicked += BaseClear;
+        tree.Q<Button>("BaseSelect").clicked += BaseSelect;
+
         //Serialized Lists
 
         tree.Q<VisualElement>("BaseIngredients").Add(new PropertyField(ingredientsProperty));
@@ -364,10 +395,10 @@ public class FlaskEditor : Editor
         //Add ingredients
         tree.Q<Button>("GameSelect").clicked += () =>
         {
+            if (!ElixirMixer.ConfirmMelonDirectory())
+                return;
             SelectIngredient(ref info.gameIngredients, ElixirMixer.ML_DIR);
             EditorUtility.SetDirty(info);
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
             serializedObject.ApplyModifiedProperties();
             serializedObject.Update();
         };
@@ -377,6 +408,33 @@ public class FlaskEditor : Editor
         tree.Q<Button>("PackFlask").clicked += PackFlask;
 
         return tree;
+    }
+
+    private void BaseToDefault()
+    {
+        info.ingredients = ElixirMixer.GetDefaultReferences(false);
+        EditorUtility.SetDirty(info);
+        serializedObject.ApplyModifiedProperties();
+        serializedObject.Update();
+    }
+
+    private void BaseClear()
+    {
+        info.ingredients = new string[0];
+        EditorUtility.SetDirty(info);
+        serializedObject.ApplyModifiedProperties();
+        serializedObject.Update();
+    }
+
+    private void BaseSelect()
+    {
+        if (!ElixirMixer.ConfirmMelonDirectory())
+            return;
+
+        SelectIngredient(ref info.ingredients, ElixirMixer.ML_MANAGED_DIR);
+        EditorUtility.SetDirty(info);
+        serializedObject.ApplyModifiedProperties();
+        serializedObject.Update();
     }
 
     private void TestFlask()

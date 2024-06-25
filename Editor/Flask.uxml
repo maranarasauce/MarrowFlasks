@@ -20,8 +20,8 @@
     <ui:Foldout text="Ingredients" name="IngredientsFoldout" style="-unity-font-style: bold; margin-top: 10px; margin-bottom: 10px;">
         <ui:Toggle label="Default Base Ingredients" value="true" name="BaseIngredientToggle" style="-unity-font-style: normal; left: auto; margin-left: 18px; margin-bottom: 0;" />
         <ui:VisualElement name="BaseIngredientGrp" style="left: 0; padding-right: 0; margin-right: 0; bottom: 0; margin-bottom: 15px; margin-top: 5px; display: none; margin-left: 36px;">
-            <ui:Label text="&lt;color=red&gt;Please only tamper with Base Ingredients if you know what you&apos;re doing.&lt;/color&gt; These ingredients are essential to functionality and changing this list may shatter your Flask." display-tooltip-when-elided="true" name="BaseWarning" style="margin-top: 0; margin-right: 36px; -unity-font-style: normal; white-space: normal;" />
-            <ui:IMGUIContainer name="BaseIngredients" />
+            <ui:Label text="&lt;color=red&gt;Please only tamper with Base Ingredients if you know what you&apos;re doing.&lt;/color&gt; These ingredients are essential to functionality and changing this list may shatter your Flask." display-tooltip-when-elided="true" name="BaseWarning" style="margin-top: 0; margin-right: 36px; -unity-font-style: normal; white-space: normal; margin-bottom: 5px;" />
+            <ui:IMGUIContainer name="BaseIngredients" style="-unity-font-style: normal;" />
             <ui:VisualElement name="BaseIngredientBtns" style="left: auto; padding-right: 0; margin-right: 18px; flex-direction: row; flex-wrap: nowrap; margin-left: 0;">
                 <ui:Button text="Set Base to Defaults" display-tooltip-when-elided="true" name="BaseDefaults" style="margin-left: 0; -unity-font-style: normal;" />
                 <ui:Button text="Clear Base" display-tooltip-when-elided="true" name="BaseClear" style="-unity-font-style: normal;" />
@@ -32,6 +32,7 @@
         <ui:VisualElement name="PalletIngredients" style="margin-left: 18px; margin-top: 0; display: flex; -unity-font-style: normal;" />
         <ui:VisualElement name="IngredientBtns" style="left: auto; padding-right: 0; margin-right: 0; flex-direction: row; flex-wrap: nowrap; margin-left: 18px; margin-top: 3px;">
             <ui:Button text="Select Game Ingredient" display-tooltip-when-elided="true" name="GameSelect" style="margin-left: 0; -unity-font-style: normal;" />
+            <ui:Button text="Select Pallet Ingredient" display-tooltip-when-elided="true" name="PalletSelect" style="margin-left: 0; -unity-font-style: normal;" />
         </ui:VisualElement>
     </ui:Foldout>
     <ui:Foldout text="Debugging" name="DebugFoldout" value="true" style="-unity-font-style: bold; flex-direction: column;">

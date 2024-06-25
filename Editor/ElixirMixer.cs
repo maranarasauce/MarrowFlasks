@@ -466,6 +466,7 @@ namespace Maranara.Marrow
 
         private static string[] AddPathToReferences(string[] references, string relPath)
         {
+            string[] newRefs = new string[references.Length];
             for (int i = 0; i < references.Length; i++)
             {
                 string path = references[i];
@@ -499,10 +500,10 @@ namespace Maranara.Marrow
                     }
 
                     if (File.Exists(newPath))
-                        references[i] = newPath;
+                        newRefs[i] = newPath;
                 }
             }
-            return references;
+            return newRefs;
         }
         #endregion
 
