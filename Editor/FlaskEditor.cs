@@ -1,4 +1,7 @@
 using Maranara.Marrow;
+using Microsoft.CodeAnalysis.Scripting;
+using SLZ.Marrow;
+using SLZ.Marrow.Zones;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,6 +10,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UIElements;
 
 [CustomEditor(typeof(Flask))]
 public class FlaskEditor : Editor
@@ -296,6 +300,196 @@ public class FlaskEditor : Editor
         #endregion
 
         serializedObject.ApplyModifiedProperties();
+    }
+
+    DragAndDropManipulatorListHelper dragDropManip;
+    public override VisualElement CreateInspectorGUI()
+    {
+
+        string VISUALTREE_PATH = AssetDatabase.GUIDToAssetPath("b4f4c7462f8ee1a45a17b4fdf075b98d");
+        VisualTreeAsset visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(VISUALTREE_PATH);
+        VisualElement tree = visualTree.Instantiate();
+
+        //Elixir List
+        string ELEMENT_PATH = AssetDatabase.GUIDToAssetPath("fc0a6e9674adeac49a0a82ffae009a25");
+        itemTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(ELEMENT_PATH);
+
+        listParent = tree.Q<VisualElement>("ElixirItem").parent;
+        RefreshElixirList();
+
+        //Add From Buttons
+        tree.Q<Button>("AddFromSelected").clicked += AddElixirsFromSelected;
+        tree.Q<Button>("AddFromScene").clicked += AddElixirsFromScene;
+
+        // Drag and Drop
+        dragDropManip = new(tree);
+        VisualElement zoneLinkDragDropTarget = tree.Q<VisualElement>("zoneLinkDragDropTarget");
+        Label zoneLinkDragDropHint = tree.Q<Label>("zoneLinkDragDropHint");
+        Label preDragHintText = tree.Q<Label>("preDragHintText");
+        IMGUIContainer imguiValidationContainer = tree.Q<IMGUIContainer>("imguiValidationContainer");
+        zoneLinkDragDropTarget.RegisterCallback<DragUpdatedEvent>(evt =>
+        {
+            DropAreaDragActive(zoneLinkDragDropTarget, zoneLinkDragDropHint, preDragHintText);
+        });
+        zoneLinkDragDropTarget.RegisterCallback<DragLeaveEvent>(evt =>
+        {
+            DropAreaDefaults(zoneLinkDragDropTarget, zoneLinkDragDropHint, preDragHintText);
+        });
+        zoneLinkDragDropTarget.RegisterCallback<DragPerformEvent>(evt =>
+        {
+            List<MonoScript> elixirList = info.Elixirs.ToList();
+            foreach (var droppedObject in dragDropManip.droppedObjects)
+            {
+                MonoScript droppedGO = (MonoScript)droppedObject;
+                if (droppedGO != null)
+                {
+                    Type elixirType = droppedGO.GetClass();
+
+                    Elixir attribute = (Elixir)elixirType.GetCustomAttribute(typeof(Elixir));
+                    if (attribute != null)
+                    {
+                        if (!elixirList.Contains(droppedGO))
+                            elixirList.Add(droppedGO);
+                    }
+                }
+            }
+
+            info.Elixirs = elixirList.ToArray();
+
+            RefreshElixirList();
+
+            EditorUtility.SetDirty(info);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            DropAreaDefaults(zoneLinkDragDropTarget, zoneLinkDragDropHint, preDragHintText);
+            zoneLinkDragDropTarget.RemoveFromClassList("drop-area--dropping");
+        });
+        imguiValidationContainer.onGUIHandler = () =>
+        {
+            DropAreaDefaults(zoneLinkDragDropTarget, zoneLinkDragDropHint, preDragHintText);
+            zoneLinkDragDropTarget.RemoveFromClassList("drop-area--dropping");
+        };
+        return tree;
+    }
+
+    private void AddElixirsFromScene()
+    {
+        List<MonoScript> elixirList = info.Elixirs.ToList();
+        MonoScript[] scripts = Elixir.GetAllElixirsFromScene();
+        foreach (var script in scripts)
+        {
+            if (elixirList.Contains(script))
+                continue;
+            elixirList.Add(script);
+        }
+        info.Elixirs = elixirList.ToArray();
+
+        RefreshElixirList();
+
+        EditorUtility.SetDirty(info);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+    }
+
+    private void AddElixirsFromSelected()
+    {
+        List<MonoScript> elixirList = info.Elixirs.ToList();
+        MonoScript[] scripts = Elixir.GetSelected();
+        foreach (var script in scripts)
+        {
+            if (elixirList.Contains(script))
+                continue;
+            elixirList.Add(script);
+        }
+        info.Elixirs = elixirList.ToArray();
+
+        RefreshElixirList();
+
+        EditorUtility.SetDirty(info);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+    }
+
+    private VisualTreeAsset itemTemplate;
+    private VisualElement[] elixirList;
+    private VisualElement listParent;
+    private void RefreshElixirList()
+    {
+        if (itemTemplate == null)
+            return;
+        if (elixirList != null)
+        {
+            foreach (VisualElement elixir in elixirList)
+            {
+                elixir.RemoveFromHierarchy();
+            }
+        }
+
+        elixirList = new VisualElement[info.elixirGUIDs.Length]; 
+        for (int i = 0; i < elixirList.Length; i++)
+        {
+            VisualElement e = itemTemplate.Instantiate();
+
+            StyleEnum<DisplayStyle> style = e.style.display;
+            style.value = DisplayStyle.Flex;
+            e.style.display = style;
+
+            e.Q<Label>("Path").text = AssetDatabase.GUIDToAssetPath(info.elixirGUIDs[i]);
+
+            string link = "LinkMid";
+            if (elixirList.Length == 1 || i == elixirList.Length - 1)
+                link = "LinkBtm";
+            else if (i == 0)
+                link = "LinkTop";
+
+            e.Q<VisualElement>(link).style.display = style;
+
+            MonoScript type = info.Elixirs[i];
+            VisualElement assetIcon = e.Q<VisualElement>("AssetIcon");
+            Background bg = assetIcon.style.backgroundImage.value;
+            bg.texture = AssetDatabase.GetCachedIcon(AssetDatabase.GetAssetPath(type)) as Texture2D;
+            assetIcon.style.backgroundImage = bg;
+
+            Button remove = e.Q<Button>("Remove");
+            remove.clicked += () => Remove_clicked(type);
+
+            listParent.Add(e);
+            elixirList[i] = e;
+        }
+    }
+
+    private void Remove_clicked(MonoScript guid)
+    {
+        List<MonoScript> elixirList = info.Elixirs.ToList();
+        elixirList.Remove(guid);
+        info.Elixirs = elixirList.ToArray();
+
+        RefreshElixirList();
+
+        EditorUtility.SetDirty(info);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+    }
+
+    private void DropAreaDefaults(VisualElement zoneLinkDragDropTarget, Label zoneLinkDragDropHint, Label preDragHintText)
+    {
+        preDragHintText.style.display = DisplayStyle.Flex;
+        zoneLinkDragDropTarget.style.borderTopWidth = 0;
+        zoneLinkDragDropTarget.style.borderBottomWidth = 0;
+        zoneLinkDragDropTarget.style.borderLeftWidth = 0;
+        zoneLinkDragDropTarget.style.borderRightWidth = 0;
+        zoneLinkDragDropHint.style.display = DisplayStyle.None;
+    }
+
+    private void DropAreaDragActive(VisualElement zoneLinkDragDropTarget, Label zoneLinkDragDropHint, Label preDragHintText)
+    {
+        preDragHintText.style.display = DisplayStyle.None;
+        zoneLinkDragDropTarget.style.borderTopWidth = 1;
+        zoneLinkDragDropTarget.style.borderBottomWidth = 1;
+        zoneLinkDragDropTarget.style.borderLeftWidth = 1;
+        zoneLinkDragDropTarget.style.borderRightWidth = 1;
+        zoneLinkDragDropHint.style.display = DisplayStyle.Flex;
     }
 
     private static void SelectIngredient(ref string[] arr)
