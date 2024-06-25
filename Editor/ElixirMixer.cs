@@ -236,10 +236,13 @@ namespace Maranara.Marrow
 
             if (flask.useDefaultIngredients)
                 references.AddRange(GetDefaultReferences(true));
-            else references.AddRange(AddPathToReferences(flask.ingredients));
+            else references.AddRange(AddPathToReferences(flask.ingredients, ML_MANAGED_DIR));
 
-            /*if (flask.additionalIngredients != null)
-                references.AddRange(AddPathToReferences(flask.additionalIngredients));*/
+            if (flask.gameIngredients != null)
+                references.AddRange(AddPathToReferences(flask.gameIngredients, ML_DIR));
+
+            if (flask.palletIngredients != null)
+                references.AddRange(GetFlaskReferences(flask.palletIngredients));
 
             BuildDLL(title, scriptPaths, references.ToArray(), outputDirectory, openOutputDir);
             
@@ -456,7 +459,12 @@ namespace Maranara.Marrow
             return additionalReferences.ToArray();
         }
 
-        private static string[] AddPathToReferences(string[] references)
+        private static string[] GetFlaskReferences(Flask[] flasks)
+        {
+            return new string[0];
+        }
+
+        private static string[] AddPathToReferences(string[] references, string relPath)
         {
             for (int i = 0; i < references.Length; i++)
             {
@@ -468,7 +476,7 @@ namespace Maranara.Marrow
                     if (!path.EndsWith(".dll"))
                         path = path + ".dll";
 
-                    string newPath = Path.Combine(ML_MANAGED_DIR, path);
+                    string newPath = Path.Combine(relPath, path);
 
                     //Check if this is a flask reference
                     if (path.StartsWith("Pallet-"))

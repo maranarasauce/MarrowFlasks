@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:Template name="ElixirItem" src="project://database/Assets/ElixirItem.uxml?fileID=9197481963319205126&amp;guid=fc0a6e9674adeac49a0a82ffae009a25&amp;type=3#ElixirItem" />
+    <ui:Template name="ElixirItem" src="project://database/Packages/com.maranara.marrowflasks/Editor/ElixirItem.uxml?fileID=9197481963319205126&amp;guid=fc0a6e9674adeac49a0a82ffae009a25&amp;type=3#ElixirItem" />
     <ui:Foldout text="Usage Info" name="UsageInfo" value="false" style="left: 18px; right: auto; padding-right: 18px; margin-bottom: 0; display: none;">
         <ui:Label text="Elixirs are Mono Scripts that will be compiled into your Flask. This means MonoBehaviours and ScriptableObjects are supported, with nested types such as structs being &quot;supported.&quot; Supported in the fact that they will compile as a part of their parent Elixir, but will not show up in any Elixir list." display-tooltip-when-elided="true" style="flex-wrap: wrap; white-space: normal;" />
     </ui:Foldout>
@@ -29,13 +29,13 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="GameIngredients" style="margin-left: 18px; margin-top: 5px; -unity-font-style: normal;" />
-        <ui:VisualElement name="PalletIngredients" style="margin-left: 18px; margin-top: 0; display: none; -unity-font-style: normal;" />
+        <ui:VisualElement name="PalletIngredients" style="margin-left: 18px; margin-top: 0; display: flex; -unity-font-style: normal;" />
         <ui:VisualElement name="IngredientBtns" style="left: auto; padding-right: 0; margin-right: 0; flex-direction: row; flex-wrap: nowrap; margin-left: 18px; margin-top: 3px;">
             <ui:Button text="Select Game Ingredient" display-tooltip-when-elided="true" name="GameSelect" style="margin-left: 0; -unity-font-style: normal;" />
         </ui:VisualElement>
     </ui:Foldout>
     <ui:Foldout text="Debugging" name="DebugFoldout" value="true" style="-unity-font-style: bold; flex-direction: column;">
-        <ui:VisualElement name="DebugBtns" style="flex-direction: row;">
+        <ui:VisualElement name="DebugBtns" style="flex-direction: row; margin-top: 1px;">
             <ui:Button text="Taste Test Flask" display-tooltip-when-elided="true" name="TestFlask" style="margin-left: 18px; -unity-font-style: normal;" />
             <ui:Button text="Pack Flask into Pallet" display-tooltip-when-elided="true" name="PackFlask" style="margin-left: 3px; -unity-font-style: normal;" />
         </ui:VisualElement>
