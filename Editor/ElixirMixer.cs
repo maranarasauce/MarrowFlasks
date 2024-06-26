@@ -463,17 +463,17 @@ namespace Maranara.Marrow
             return additionalReferences.ToArray();
         }
 
-        private static string[] GetFlaskReferences(string[] flasks)
+        private static string[] GetFlaskReferences(DataCardReference<Flask>[] flasks)
         {
             List<string> refs = new List<string>();
-            foreach (string flaskRef in flasks)
+            foreach (DataCardReference<Flask> flaskRef in flasks)
             {
-                if (!AssetWarehouse.Instance.TryGetDataCard<Flask>(flaskRef, out var flask))
+                if (!flaskRef.TryGetDataCard(out Flask flask))
                 {
-                    Debug.Log($"Could not find Flask with Barcode {flaskRef}");
+                    Debug.Log($"Could not find Flask Ingredient {flaskRef.Barcode}");
                     continue;
                 }
-                
+
                 if (AssetWarehouse.Instance.WorkingPallets.ContainsKey(flask.Pallet.Barcode))
                 {
                     //Flask is owned by user and can be compiled (if not already)

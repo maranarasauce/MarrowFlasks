@@ -165,7 +165,7 @@ public class FlaskEditor : Editor
 
         tree.Q<VisualElement>("BaseIngredients").Add(new PropertyField(ingredientsProperty));
         tree.Q<VisualElement>("GameIngredients").Add(new PropertyField(gameIngredientsProperty));
-        tree.Q<VisualElement>("PalletIngredients").Add(new PropertyField(palletIngredientsProperty));
+        tree.Q<PropertyField>("PalletIngredients").BindProperty(palletIngredientsProperty);
 
         //Add ingredients
         tree.Q<Button>("GameSelect").clicked += () =>
@@ -177,36 +177,6 @@ public class FlaskEditor : Editor
             serializedObject.ApplyModifiedProperties();
             serializedObject.Update();
         };
-
-        //Add flask ingredients
-        Button flaskIngredientSelect = tree.Q<Button>("PalletSelect");
-        ObjectField flaskIngredientField = tree.Q<ObjectField>("FlaskIngredientField");
-        flaskIngredientField.RegisterValueChangedCallback(
-            evt =>
-            {
-                StyleEnum<DisplayStyle> displayHidden = flaskIngredientSelect.style.display;
-                displayHidden = evt.newValue == null ? DisplayStyle.None : DisplayStyle.Flex;
-                flaskIngredientSelect.style.display = displayHidden;
-
-                if (evt.newValue == info)
-                    flaskIngredientField.value = null;
-            }
-        );
-
-        flaskIngredientSelect.clicked += () =>
-        {
-            List<string> a = info.palletIngredients.ToList();
-            Flask flask = (Flask)flaskIngredientField.value;
-            a.Add(flask.Barcode);
-            info.palletIngredients = a.ToArray();
-
-            flaskIngredientField.value = null;
-
-            EditorUtility.SetDirty(info);
-            serializedObject.ApplyModifiedProperties();
-            serializedObject.Update();
-        };
-
         //Debug buttons
         tree.Q<Button>("TestFlask").clicked += TestFlask;
         tree.Q<Button>("PackFlask").clicked += PackFlask;

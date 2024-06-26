@@ -15,7 +15,7 @@ public class Flask : DataCard
     public bool useDefaultIngredients = true;
     public string[] ingredients;
     public string[] gameIngredients;
-    public string[] palletIngredients;
+    public DataCardReference<Flask>[] palletIngredients;
 
 #if UNITY_EDITOR
     public delegate void PackDelegate(Flask flask);
@@ -92,8 +92,6 @@ public class Flask : DataCard
         OnPacked?.Invoke(this);
         base.Pack(store, json);
     }
-
-    
 
     [MenuItem("Stress Level Zero/Alchemy/Create Flask Based on Open Scenes")]
     public static void CreateFlaskInfo()
