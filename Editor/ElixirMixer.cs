@@ -27,15 +27,6 @@ namespace Maranara.Marrow
         static ElixirMixer()
         {
             Flask.OnPacked = OnPack;
-            EditorApplication.update = Check;
-        }
-
-        private static bool checking;
-        private static Pallet curPallet;
-        public static void Check()
-        {
-            if (checking)
-                ProcessFlaskJson(curPallet);
         }
 
         public static void OnPack(Flask flask)
@@ -46,51 +37,10 @@ namespace Maranara.Marrow
             if (st.ToString().Contains("PackPallet"))
             {
                 Debug.Log($"Export Flask. {flask.Title}");
-                checking = true;
-                curPallet = flask.Pallet;
                 ExportFlask(flask);
             }
         }
 
-        private static void ProcessFlaskJson(Pallet pallet)
-        {
-            if (curPallet == null)
-            {
-                checking = false;
-                return;
-            }
-            checking = false;
-            return;
-            string dir = Path.GetFullPath(ElixirMixer.BuildPath(pallet));
-            string[] files = Directory.GetFiles(dir);
-
-            foreach (string file in files)
-            {
-                Debug.Log(file);
-                if (file.EndsWith("pallet.json"))
-                {
-                    checking = false;
-                    string palletJson = File.ReadAllText(file);
-                    JObject obj = JObject.Parse(palletJson);
-
-                    JToken dataCards = obj["objects"]["1"]["dataCards"];
-
-                    for (int i = 0; i < dataCards.Count(); i++)
-                    {
-                        var card = dataCards[i];
-                        string parse = card["type"].ToString();
-                        Debug.Log(parse);
-                        if (parse == "1")
-                        {
-                            card.Remove();
-                        }
-                    }
-
-                    File.WriteAllText(file, obj.ToString());
-                    return;
-                }
-            }
-        }
 
         public static string BuildPath(Pallet pallet)
         {
