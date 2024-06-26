@@ -23,22 +23,10 @@ public class FlaskEditor : Editor
     void OnEnable()
     {
         info = target as Flask;
-        toAdd = new List<MonoScript>();
         ingredientsProperty = serializedObject.FindProperty("ingredients");
         gameIngredientsProperty = serializedObject.FindProperty("gameIngredients");
         palletIngredientsProperty = serializedObject.FindProperty("palletIngredients");
     }
-
-    // The currently selected Elixir in the inspector
-    private MonoScript selectedElixir;
-    // List that compiles all Elixirs in a given OnInspectorGUI run, to be added to the elixir list
-    private List<MonoScript> toAdd;
-    // Same as above but for removing an elixir
-    private MonoScript toRemove;
-    // Foldout bools
-    private bool notAnElixir, ingredientsInfoFoldout, ingredientsFoldout, elixirInfoFoldout;
-    private bool elixirListFoldout = true;
-    private bool debugFoldout = false;
 
     private SerializedProperty ingredientsProperty;
     private SerializedProperty gameIngredientsProperty;
@@ -398,11 +386,5 @@ public class FlaskEditor : Editor
         {
             EditorUtility.RevealInFinder(Path.Combine(Application.temporaryCachePath, "StirTest.dll"));
         }
-    }
-
-    private void OnValidate()
-    {
-        notAnElixir = false;
-        selectedElixir = null;
     }
 }
