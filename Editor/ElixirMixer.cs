@@ -229,6 +229,9 @@ namespace Maranara.Marrow
         
         private static bool BuildDLL(string title, string[] elixirs, string[] references, string outputPath, bool openOutputDir = false)
         {
+            if (!ConfirmMelonDirectory())
+                return false;
+
             //Construct temporary directory
             string tempDir = Path.Combine(Path.GetTempPath(), "flasktemp");
             if (Directory.Exists(tempDir))
