@@ -274,6 +274,9 @@ namespace Maranara.Marrow
                 XElement newRef = new XElement("Reference");
                 newRef.SetAttributeValue("Include", Path.GetFileNameWithoutExtension(refHint));
                 XElement newHint = new XElement("HintPath");
+                if (string.IsNullOrEmpty(ML_MANAGED_DIR)) Debug.LogError("ML is Null");
+                if (string.IsNullOrEmpty(refHint)) Debug.LogError("Ref is Null");
+
                 newHint.SetValue(Path.Combine(ML_MANAGED_DIR, refHint));
                 newRef.Add(newHint);
 
