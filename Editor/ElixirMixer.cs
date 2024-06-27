@@ -193,7 +193,7 @@ namespace Maranara.Marrow
             else references.AddRange(AddPathToReferences(flask.ingredients, ML_MANAGED_DIR));
 
             if (flask.gameIngredients != null)
-                references.AddRange(AddPathToReferences(flask.gameIngredients, ML_MANAGED_DIR));
+                references.AddRange(AddPathToReferences(flask.gameIngredients, ML_DIR));
 
             if (flask.palletIngredients != null)
                 references.AddRange(GetFlaskReferences(flask.palletIngredients));
