@@ -34,7 +34,7 @@ public class FlaskEditor : Editor
     public override void OnInspectorGUI()
     {
         EditorGUILayout.LabelField("This is an external Flask. You cannot edit its contents.");
-        EditorGUILayout.TextField(info.Barcode);
+        EditorGUILayout.TextField(info.Barcode.ID);
     }
 
     DragAndDropManipulatorListHelper dragDropManip;

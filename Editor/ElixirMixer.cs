@@ -456,7 +456,7 @@ namespace Maranara.Marrow
                     //Flask is referenced and needs to be found
                     string ModDir = Path.Combine(ModBuilder.GamePaths[0], MarrowSDK.RUNTIME_MODS_DIRECTORY_NAME);
                     string SelfModDir = Path.Combine(Application.persistentDataPath, MarrowSDK.RUNTIME_MODS_DIRECTORY_NAME);
-                    string palletPath = Path.Combine(flask.Pallet.Barcode, "flasks", $"{flask.GetCompiledName()}.dll");
+                    string palletPath = Path.Combine(flask.Pallet.Barcode.ID, "flasks", $"{flask.GetCompiledName()}.dll");
 
                     string selfPallet = Path.Combine(SelfModDir, palletPath);
                     string modPallet = Path.Combine(ModDir, palletPath);
