@@ -18,6 +18,7 @@ using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using UnityEditor.ShaderKeywordFilter;
 using NUnit.Framework;
+using UnityEngine.UIElements;
 
 namespace Maranara.Marrow
 {
@@ -271,6 +272,8 @@ namespace Maranara.Marrow
             //Add references to Ingredients
             foreach (string refHint in references)
             {
+                if (string.IsNullOrEmpty(refHint))
+                    continue;
                 XElement newRef = new XElement("Reference");
                 newRef.SetAttributeValue("Include", Path.GetFileNameWithoutExtension(refHint));
                 XElement newHint = new XElement("HintPath");
@@ -589,7 +592,7 @@ namespace Maranara.Marrow
 
         public static bool ConfirmMelonDirectory()
         {
-            if (string.IsNullOrEmpty(ML_DIR))
+            if (string.IsNullOrEmpty(ML_DIR) || string.IsNullOrEmpty(ML_MANAGED_DIR))
             {
                 bool solved = false;
                 foreach (var gamePath in ModBuilder.GamePathDictionary)

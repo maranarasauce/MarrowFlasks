@@ -93,7 +93,6 @@ public class Flask : DataCard
         base.Pack(store, json);
     }
 
-    [MenuItem("Stress Level Zero/Alchemy/Create Flask Based on Open Scenes")]
     public static void CreateFlaskInfo()
     {
         string flaskTitle = SceneManager.GetActiveScene().name;
