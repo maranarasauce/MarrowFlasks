@@ -48,14 +48,13 @@ namespace Maranara.Marrow
                 return AddressablesManager.EvaluateProfileValueBuildPathForPallet(pallet, AddressablesManager.ProfilePalletID);
         }
         public static string ML_DIR = null;
-        public static string ML_MANAGED_DIR = null;
         public static string IL2CPP_ASSEMBLIES
         {
-            get { return Path.Combine(Directory.GetParent(ML_MANAGED_DIR).FullName, "Il2CppAssemblies"); }
+            get { return Path.Combine(ML_DIR, "Il2CppAssemblies"); }
         }
         public static string NET6_DIR
         {
-            get { return Path.Combine(Directory.GetParent(ML_MANAGED_DIR).FullName, "net6"); }
+            get { return Path.Combine(ML_DIR, "net6"); }
         }
 
         public static void ExportFlasksFromPallet(Pallet pallet)
@@ -140,7 +139,7 @@ namespace Maranara.Marrow
                 assemblyResolve.RemoveSearchDirectory(directories[i]);
             }
 
-            assemblyResolve.AddSearchDirectory(Path.GetFullPath(ML_MANAGED_DIR));
+            assemblyResolve.AddSearchDirectory(Path.GetFullPath(ML_DIR));
             //assemblyResolve.AddSearchDirectory(Path.GetFullPath(Path.Combine(Application.dataPath, "..\\ScriptReferences")));
 
             using (var module = ModuleDefinition.ReadModule(path, new ReaderParameters() { AssemblyResolver = assemblyResolve }))
@@ -191,7 +190,7 @@ namespace Maranara.Marrow
 
             if (flask.useDefaultIngredients)
                 references.AddRange(GetDefaultReferences(true));
-            else references.AddRange(AddPathToReferences(flask.ingredients, ML_MANAGED_DIR));
+            else references.AddRange(AddPathToReferences(flask.ingredients, ML_DIR));
 
             if (flask.gameIngredients != null)
                 references.AddRange(AddPathToReferences(flask.gameIngredients, ML_DIR));
@@ -277,7 +276,7 @@ namespace Maranara.Marrow
                 XElement newRef = new XElement("Reference");
                 newRef.SetAttributeValue("Include", Path.GetFileNameWithoutExtension(refHint));
                 XElement newHint = new XElement("HintPath");
-                newHint.SetValue(Path.Combine(ML_MANAGED_DIR, refHint));
+                newHint.SetValue(Path.Combine(ML_DIR, refHint));
                 newRef.Add(newHint);
 
                 reference.Add(newRef);
@@ -347,9 +346,10 @@ namespace Maranara.Marrow
 
             List<string> additionalReferences = new List<string>();
 
-            additionalReferences.Add(Path.GetRelativePath(ML_MANAGED_DIR, Path.Combine(Directory.GetParent(ML_MANAGED_DIR).Parent.FullName, "Mods", "MarrowCauldron.dll")));
+            string cauldronPath = Path.GetRelativePath(ML_DIR, Path.Combine(Directory.GetParent(ML_DIR).FullName, "Mods", "MarrowCauldron.dll"));
+            additionalReferences.Add(cauldronPath);
 
-            foreach (string reference in Directory.GetFiles(ML_MANAGED_DIR))
+            foreach (string reference in Directory.GetFiles(ML_DIR))
             {
                 if (!reference.EndsWith(".dll"))
                     continue;
@@ -385,7 +385,7 @@ namespace Maranara.Marrow
 
             additionalReferences.Add("..\\..\\Mods\\MarrowCauldron.dll");
 
-            foreach (string reference in Directory.GetFiles(ML_MANAGED_DIR))
+            foreach (string reference in Directory.GetFiles(ML_DIR))
             {
                 if (!reference.EndsWith(".dll"))
                     continue;
@@ -592,7 +592,7 @@ namespace Maranara.Marrow
 
         public static bool ConfirmMelonDirectory()
         {
-            if (string.IsNullOrEmpty(ML_DIR) || string.IsNullOrEmpty(ML_MANAGED_DIR))
+            if (string.IsNullOrEmpty(ML_DIR))
             {
                 bool solved = false;
                 foreach (var gamePath in ModBuilder.GamePathDictionary)
@@ -603,7 +603,6 @@ namespace Maranara.Marrow
                     {
                         string mlPath = File.ReadAllText(gamePathSS);
                         ML_DIR = mlPath.Replace("\n", "").Replace("\r", "");
-                        ML_MANAGED_DIR = Path.Combine(ML_DIR, "Managed");
                         solved = true;
                     }
                     else

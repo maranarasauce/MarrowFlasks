@@ -193,7 +193,7 @@ public class FlaskEditor : Editor
         if (!ElixirMixer.ConfirmMelonDirectory())
             return;
 
-        SelectIngredient(ref info.ingredients, ElixirMixer.ML_MANAGED_DIR);
+        SelectIngredient(ref info.ingredients, ElixirMixer.ML_DIR);
         EditorUtility.SetDirty(info);
         serializedObject.ApplyModifiedProperties();
         serializedObject.Update();
